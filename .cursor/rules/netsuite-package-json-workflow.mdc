@@ -1,0 +1,48 @@
+---
+description: NetSuite client project package.json workflow — env setup script and per-ticket suitecloud file:upload scripts
+globs: "**/package.json"
+alwaysApply: true
+---
+
+# NetSuite package.json Workflow
+
+Every NetSuite client work project must have a `package.json` at the project root. Create one if missing.
+
+## Required `env` script
+
+Always include:
+
+```json
+"env": "suitecloud account:setup -i"
+```
+
+If `env` is missing, add it. Do not remove or rename it.
+
+## Ticket-based upload scripts
+
+Work is tracked by ticket. Each ticket lists the SuiteScript (or related) paths to deploy for that change.
+
+When you change files for a ticket:
+
+1. **Ask for the ticket number** if the user did not provide it (e.g. `1234` for script name `u-risd-1234`).
+2. Add or update an npm script named **`u-risd-<ticket>`** (lowercase `u-risd-`, ticket digits as given).
+3. Set the script value to upload **only the paths touched for that ticket**, using SuiteCloud CLI:
+
+```json
+"u-risd-1234": "suitecloud file:upload --paths \"/SuiteScripts/your/path/file.js\""
+```
+
+- Use one `--paths` per path, or combine per your project’s existing `package.json` style if scripts already exist.
+- Every `--paths` value must be a File Cabinet path that **starts with `/SuiteScripts`** (e.g. `/SuiteScripts/client/module/file.js`). Map local project files to that prefix; never use paths outside `/SuiteScripts` or omit the prefix.
+- If a ticket script already exists, **merge** new paths into that upload command; do not drop unrelated paths already listed for the same ticket unless the user says to.
+
+## When to update
+
+- After creating, renaming, or editing deployable files for a ticket → ensure `u-risd-<ticket>` includes those paths.
+- Before suggesting `npm run u-risd-<ticket>`, confirm `package.json` reflects the current file set.
+
+## Do not
+
+- Invent ticket numbers.
+- Add upload scripts without a ticket id from the user.
+- Replace the `env` script with a different command.

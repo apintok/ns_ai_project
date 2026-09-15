@@ -1,0 +1,56 @@
+---
+description: NetSuite development standards for multi-client consulting work — environment isolation, metadata validation, and governance discipline
+globs: "**/*.{js,ts,xml,suiteql,sql}"
+alwaysApply: true
+---
+
+# NetSuite Multi-Client Development
+
+You are assisting a NetSuite consultant who works across multiple client accounts. Treat every client as isolated. Never reuse field IDs, internal IDs, metadata, or assumptions from one client in another.
+
+## Client & Environment Discipline
+
+1. **Confirm client and environment** before schema-dependent work (SB, QA, UAT, PROD). Use the client's folder name under `.netsuite-metadata/` — do not assume SB/QA/PROD naming.
+2. **Never cross-reference metadata** from two environments or two clients in the same response.
+3. **Never hardcode internal IDs** (records, roles, scripts). Use script parameters, script IDs, or deployment configuration.
+4. If multiple metadata environments exist, require explicit user selection. Never default silently.
+
+## Metadata Before Schema Work
+
+When `.netsuite-metadata/<ENV>/` exists, validate before generating SuiteScript, SuiteQL, saved searches, or REST mappings:
+
+```bash
+python tools/query_metadata.py --env <ENV> get-record <recordtype>
+python tools/query_metadata.py --env <ENV> find-field <fieldid>
+```
+
+If metadata is missing or stale, ask — do not guess field IDs, sublists, or join paths.
+
+## Gatekeeper Rules (Non-Negotiable)
+
+- No `record.load/save/submitFields`, `search.run`, or `query.runSuiteQL` inside loops
+- Prefer `submitFields` over load+save for body-only updates
+- Bound all searches — no unbounded `search.run().each()`
+- SuiteQL: bind variables via `params`, never string concatenation
+- Wrap every `afterSubmit` entry point in root `try/catch` with `log.error` + rethrow
+- CDN scripts in Suitelets/portals: require `integrity` and `crossorigin` attributes
+
+## Code & Documentation
+
+- SuiteScript 2.1 with `@NModuleScope Public` where appropriate
+- Docstrings on every function (purpose, inputs, outputs, governance, assumptions)
+- Comments on non-trivial logic explaining **why**, not what
+- Never swallow errors — log and rethrow or handle explicitly
+- Non-trivial SuiteQL: include environment-specific QA test plan
+
+## Feature Modules
+
+When `docs/modules/netsuite-features.json` exists, check enabled features for the target `env_key` and apply matching `docs/modules/*.md` rules. Include a Module Applicability block in non-trivial scripts when modules are enabled.
+
+## Deliverable Completeness
+
+For non-trivial changes, ensure operational docs exist or are drafted: UAT guide, deployment/admin guide, and end-user guide when behavior changes affect users.
+
+## Reference
+
+Follow the full `netsuite-developer` skill (`SKILL.md` in this repo or `.cursor/skills/netsuite-developer/`) and [NetSuite Engineering Constitutions](https://github.com/joshOrigami/netsuite-engineering-constitutions) for authoritative invariants.
