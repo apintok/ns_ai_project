@@ -35,6 +35,61 @@ Note: This skill can be used with most AI tools that run in VSCode or are clones
 
 ---
 
+## Cursor IDE (this fork)
+
+This repository is a fork of [joshOrigami/netsuite-developer](https://github.com/joshOrigami/netsuite-developer). The core skill (`SKILL.md`, `tools/`, `docs/`) follows that project; **everything under `.cursor/` is an extra layer maintained here only** and is not part of upstream unless you open a separate contribution there.
+
+| Path | Purpose |
+|------|---------|
+| `.cursor/rules/netsuite-multi-client.mdc` | Multi-client NetSuite standards for the agent |
+| `.cursor/rules/netsuite-package-json-workflow.mdc` | `package.json` — `env`, ticket `u-risd-*` upload scripts |
+| `.cursor/agents/netsuite-code-reviewer.md` | NetSuite code review subagent |
+
+Use this repo (or copy `.cursor/` into a client project root) with [Cursor](https://cursor.com). Merging changes on **apintok/ns_ai_project** does not change the upstream fork.
+
+### Install rules, agents, and skill in Cursor
+
+**Requirements:** [Cursor](https://cursor.com), Python 3.9+ (for `tools/query_metadata.py`).
+
+**Option A — use this repo as the workspace**
+
+1. Clone or open `apintok/ns_ai_project` in Cursor.
+2. Rules and agents under `.cursor/` apply to that workspace automatically.
+3. Install the skill (not copied into `.cursor/` by default):
+
+   ```
+   <project-root>/.cursor/skills/netsuite-developer/SKILL.md
+   ```
+
+   Copy the repository root `SKILL.md` into that path (create the `netsuite-developer` folder if needed).
+
+4. Reload the Cursor window.
+
+**Option B — add to a client NetSuite project**
+
+At your client project root (SDF / SuiteCloud project), copy from this repository:
+
+| What | Destination |
+|------|-------------|
+| Rules | `.cursor/rules/netsuite-multi-client.mdc`, `.cursor/rules/netsuite-package-json-workflow.mdc` |
+| Agent | `.cursor/agents/netsuite-code-reviewer.md` |
+| Skill | `.cursor/skills/netsuite-developer/SKILL.md` (from repo root `SKILL.md`) |
+| Metadata helper | `tools/query_metadata.py` |
+| Module docs (optional) | `docs/modules/` and `docs/modules/netsuite-features.json` |
+| Account schema (optional) | `.netsuite-metadata/<ENV>/` per client environment |
+
+Reload Cursor after copying files.
+
+**Verify**
+
+- **Rules:** Open a SuiteScript file or `package.json` — project rules should appear in Cursor’s rules context (both rules use `alwaysApply: true`).
+- **Skill:** In chat, reference the skill by name (`netsuite-developer`) or ask for NetSuite work that matches the skill description in `SKILL.md` frontmatter.
+- **Subagent:** e.g. *Use the netsuite-code-reviewer subagent to review my changes.*
+
+For Codex-style paths (`.codex/skills/`) and metadata details, see [INSTALL.md](INSTALL.md) and **Installation** below.
+
+---
+
 ## Engineering Foundations
 
 This Skill aligns with the principles defined in the [NetSuite Engineering Constitutions](https://github.com/joshOrigami/netsuite-engineering-constitutions), a Specification-Driven Development (SDD) baseline for SuiteScript and integration discipline.
